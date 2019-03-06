@@ -4,15 +4,16 @@ const rp = require('request-promise');
 const http = require('http');
 // we can put require here only because we wrote 'export.' in the class
 const cryptocoin = require('./Cryptocoin.js');
+const url = require('url');
 let coinsA = [];
 
 /* start nodejs
 * 1. npm init
-* 2. npm i request --save
+* 2. npm i request --save (save makes it a local dependency)
 * 3. ok, real coin site now uses npm request-promise
 * 4. http is included with npm init
 * 5. JSON.stringify was needed to parse data
-*
+* 6. To convert coins, the fn is sent to server, need urlrequest npm i url --save
 *
 *
 */
@@ -35,12 +36,44 @@ const requestOptions = {
 };
 
 http.createServer((req, res) => {
+
+    // functions are from npm i url --save
+    const url_query = url.parse(req.url, true).query;
+    const coin1_name = url_query.from;
+    const coin2_name = url_query.to;
+
+    // find coin objs
+    let coin1 = undefined;
+    let coin2 = undefined;
+    
+    // in the Zenva video, he has coin.id--incorrect
+    coinsA.forEach((coin)=>{
+        if (coin.name === coin1_name){
+            coin1 = coin;
+        } else if (coin.name === coin2_name) {
+            coin2 = coin;
+        }
+    });
+
     res.writeHead(200, { 'Content-Type': 'text/plain' });
-    if (coinsA) {
+
+    // if both received, convert
+    // to test in browser localhost:8080/?from=Bitcoin&to=Ethereum
+    if (coin1 && coin2) {
+        // use
+        const conversion_factor = coin1.convert_to(coin2);
+        res.end (coin1.name + ' costs '+ conversion_factor + ' ' + coin2.name + 's');
+        //res.end(JSON.stringify(coinsA));
+    } else {
+        res.end('Could not find such coins');
+    }
+
+    // testing received data, see all coins.
+    /* if (coinsA) {
         res.end(JSON.stringify(coinsA));
     } else {
         res.end('No data');
-    }
+    } */
 }).listen(8080);
 
 // format for nodejs API given on coin site
