@@ -7,7 +7,7 @@ exports.Cryptocoin = class {
     }
 
     // method to convert
-    convert_to (other_coin) {
+    convert_to(other_coin) {
         return this.price_usd / other_coin.price_usd;
     }
 }
